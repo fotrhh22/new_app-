@@ -55,4 +55,4 @@ npx supabase secrets set GEMINI_API_KEY=YOUR_GEMINI_API_KEY
 npx supabase functions deploy ask-ai
 ```
 
-로컬 `.env.local`의 `GEMINI_API_KEY`는 Vite 클라이언트 번들에는 포함되지 않습니다. 배포된 Edge Function에서는 반드시 위 `supabase secrets set` 명령으로 키를 별도로 등록해야 합니다. 기본 모델은 `gemini-2.5-flash`이며 필요하면 `GEMINI_MODEL` secret으로 변경할 수 있습니다. 첨부 파일은 최대 10MB까지 전송됩니다.
+로컬 `.env.local`의 `GEMINI_API_KEY`는 Vite 클라이언트 번들에는 포함되지 않습니다. 배포된 Edge Function에서는 반드시 위 `supabase secrets set` 명령으로 키를 별도로 등록해야 합니다. 기본 모델은 `gemini-3.5-flash`이며 필요하면 `GEMINI_MODEL` secret으로 변경할 수 있습니다. 첨부 파일은 최대 10MB까지 전송됩니다.

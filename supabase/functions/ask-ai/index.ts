@@ -40,7 +40,7 @@ Deno.serve(async (request) => {
       return Response.json({ error: '질문 또는 파일이 필요합니다.' }, { status: 400, headers: corsHeaders })
     }
 
-    const model = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash'
+    const model = Deno.env.get('GEMINI_MODEL') || 'gemini-3.5-flash'
     const effectiveQuestion = question || '첨부된 파일의 내용을 분석해 주세요.'
     const { data: requestRow, error: insertError } = await admin.from('ai_requests').insert({
       user_id: userData.user.id,

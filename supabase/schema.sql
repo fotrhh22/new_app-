@@ -513,13 +513,16 @@ create table if not exists public.ai_requests (
   user_id uuid not null references auth.users(id) on delete cascade,
   question text not null check (char_length(btrim(question)) > 0),
   answer text,
-  model text not null default 'gemini-2.5-flash',
+  model text not null default 'gemini-3.5-flash',
   status text not null default 'pending' check (status in ('pending', 'completed', 'failed')),
   error_message text,
   is_favorite boolean not null default false,
   created_at timestamptz not null default timezone('utc'::text, now()),
   updated_at timestamptz not null default timezone('utc'::text, now())
 );
+
+-- 이전 스키마의 기본 모델을 최신 Flash 모델로 변경합니다.
+alter table public.ai_requests alter column model set default 'gemini-3.5-flash';
 
 create index if not exists ai_requests_user_created_idx on public.ai_requests (user_id, created_at desc);
 create index if not exists ai_requests_user_favorite_idx on public.ai_requests (user_id, is_favorite);
