@@ -8,6 +8,7 @@ const corsHeaders = {
 type GeminiResponse = {
   candidates?: Array<{
     content?: { parts?: Array<{ text?: string }> }
+    finishReason?: string
   }>
   error?: { message?: string }
 }
@@ -52,7 +53,18 @@ Deno.serve(async (request) => {
     requestId = requestRow.id as string
 
     const parts: Array<Record<string, unknown>> = []
-    parts.push({ text: effectiveQuestion })
+    const boundedPrompt = `다음 사용자 요청에 한국어로 답변하세요.
+
+[답변 작성 규칙]
+- 전체 답변을 최대 1,500토큰 이내로 작성하세요.
+- API 출력 한도에 도달하기 전에 반드시 설명과 결론을 모두 완성하세요.
+- 긴 서론, 반복, 불필요한 예시는 생략하고 핵심 내용을 우선하세요.
+- 내용이 많으면 세부사항을 줄여서라도 문장을 중간에 끊지 마세요.
+- 첨부 파일이 있다면 파일 내용을 바탕으로 답변하세요.
+
+[사용자 요청]
+${effectiveQuestion}`
+    parts.push({ text: boundedPrompt })
 
     if (file instanceof File && file.size > 0) {
       const maxFileSize = 10 * 1024 * 1024
@@ -100,12 +112,16 @@ Deno.serve(async (request) => {
     const result = await response.json() as GeminiResponse
     if (!response.ok) throw new Error(result.error?.message || `Gemini API 오류 (${response.status})`)
 
-    const answer = result.candidates?.[0]?.content?.parts
+    const candidate = result.candidates?.[0]
+    const answer = candidate?.content?.parts
       ?.map((part) => part.text ?? '')
       .join('')
       .trim()
 
     if (!answer) throw new Error('Gemini가 빈 응답을 반환했습니다.')
+    if (candidate?.finishReason === 'MAX_TOKENS') {
+      throw new Error('AI 답변이 출력 한도를 초과했습니다. 요청 범위를 조금 줄여 다시 시도해 주세요.')
+    }
 
     await admin.from('ai_requests').update({ answer, status: 'completed', error_message: null }).eq('id', requestId)
 
