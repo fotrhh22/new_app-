@@ -7,9 +7,10 @@ import ChargerMap from './components/ChargerMap'
 import MyPage from './components/MyPage'
 import Dashboard from './components/Dashboard'
 import AiHistory from './components/AiHistory'
+import BikeRoadMap from './components/BikeRoadMap'
 
 type Mode = 'login' | 'signup'
-type Page = 'home' | 'ai-history' | 'board' | 'dashboard' | 'charger' | 'mypage'
+type Page = 'home' | 'ai-history' | 'board' | 'dashboard' | 'charger' | 'bike-roads' | 'mypage'
 
 const authMessages: Record<string, string> = {
   'Invalid login credentials': '이메일 또는 비밀번호가 올바르지 않습니다.',
@@ -165,6 +166,7 @@ function App() {
               <button className={currentPage === 'board' ? 'active' : ''} onClick={() => setCurrentPage('board')}>게시판</button>
               <button className={currentPage === 'dashboard' ? 'active' : ''} onClick={() => setCurrentPage('dashboard')}>대시보드</button>
               <button className={currentPage === 'charger' ? 'active' : ''} onClick={() => setCurrentPage('charger')}>전국전동휠체어급속충전기 위치</button>
+              <button className={currentPage === 'bike-roads' ? 'active' : ''} onClick={() => setCurrentPage('bike-roads')}>서울시 자전거도로 분포</button>
               <button className={currentPage === 'mypage' ? 'active' : ''} onClick={() => setCurrentPage('mypage')}>마이페이지</button>
             </nav>
             <button className="nav-signout" onClick={handleSignOut} disabled={submitting} aria-label="로그아웃">
@@ -174,7 +176,7 @@ function App() {
           </div>
         </header>
 
-        {currentPage === 'ai-history' ? <main className="ai-history-main"><AiHistory user={session.user} onAskAgain={(value) => { setQuestion(value); setCurrentPage('home') }} /></main> : currentPage === 'board' ? <main className="board-main"><Board user={session.user} /></main> : currentPage === 'dashboard' ? <main className="dashboard-main"><Dashboard user={session.user} onOpenBoard={() => setCurrentPage('board')} onOpenMyPage={() => setCurrentPage('mypage')} /></main> : currentPage === 'charger' ? <main className="charger-main"><ChargerMap /></main> : currentPage === 'mypage' ? <main className="mypage-main"><MyPage user={session.user} onOpenBoard={() => setCurrentPage('board')} /></main> : <main className="home-main">
+        {currentPage === 'ai-history' ? <main className="ai-history-main"><AiHistory user={session.user} onAskAgain={(value) => { setQuestion(value); setCurrentPage('home') }} /></main> : currentPage === 'board' ? <main className="board-main"><Board user={session.user} /></main> : currentPage === 'dashboard' ? <main className="dashboard-main"><Dashboard user={session.user} onOpenBoard={() => setCurrentPage('board')} onOpenMyPage={() => setCurrentPage('mypage')} /></main> : currentPage === 'charger' ? <main className="charger-main"><ChargerMap /></main> : currentPage === 'bike-roads' ? <main className="charger-main"><BikeRoadMap /></main> : currentPage === 'mypage' ? <main className="mypage-main"><MyPage user={session.user} onOpenBoard={() => setCurrentPage('board')} /></main> : <main className="home-main">
           <section className="home-grid">
             <div className="request-panel">
               <div className="home-heading">
