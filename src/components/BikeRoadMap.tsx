@@ -20,13 +20,10 @@ const DISTRICT_CODES = Object.fromEntries(Object.entries(DISTRICTS).map(([code, 
 type BikeProperties = {
   sgg_cd?: string
   cot_conts_name?: string
-  sub_cate_name?: string
   cot_value_01?: string
   cot_value_02?: string
   cot_addr_full_new?: string
   cot_addr_full_old?: string
-  cot_line_color?: string
-  cot_line_weight?: string
 }
 
 type BikeGeoJson = FeatureCollection<Geometry, BikeProperties>
@@ -108,15 +105,6 @@ function BikeRoadMap() {
     }
   }, [data, district])
 
-  const categoryCounts = useMemo(() => {
-    const counts = new Map<string, number>()
-    filteredData?.features.forEach((feature) => {
-      const category = feature.properties?.sub_cate_name || '기타'
-      counts.set(category, (counts.get(category) ?? 0) + 1)
-    })
-    return Array.from(counts, ([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 4)
-  }, [filteredData])
-
   useEffect(() => {
     if (!mapElementRef.current || mapRef.current) return
     const map = L.map(mapElementRef.current, { zoomControl: false, preferCanvas: true }).setView([37.5665, 126.978], 11)
@@ -159,16 +147,16 @@ function BikeRoadMap() {
 
     const generalLayer = L.polyline(generalLines, {
       renderer,
-      color: '#65716b',
-      weight: 1,
-      opacity: 0.42,
+      color: '#27312c',
+      weight: 1.3,
+      opacity: 0.76,
       interactive: false,
     })
     const bikeLayer = L.polyline(bikeLines, {
       renderer,
-      color: '#19895f',
-      weight: 2.5,
-      opacity: 0.95,
+      color: '#007a4d',
+      weight: 3,
+      opacity: 1,
       interactive: false,
     })
     graphLayerRef.current = L.layerGroup([generalLayer, bikeLayer]).addTo(map)
@@ -179,16 +167,13 @@ function BikeRoadMap() {
     if (!map || !filteredData) return
     roadLayerRef.current?.remove()
     const layer = L.geoJSON(filteredData as FeatureCollection<Geometry, GeoJsonProperties>, {
-      style: (feature) => {
-        const properties = feature?.properties as BikeProperties | undefined
-        return { color: properties?.cot_line_color || '#6f8f3d', weight: Math.min(5, Math.max(3, Number(properties?.cot_line_weight) || 4)), opacity: 0.88, lineCap: 'round', lineJoin: 'round' }
-      },
+      style: { color: '#007a4d', weight: 4, opacity: 1, lineCap: 'round', lineJoin: 'round' },
       onEachFeature: (feature, road) => {
         const item = feature.properties as BikeProperties
         const resolvedCode = resolveDistrictCode(item)
         const districtName = resolvedCode ? DISTRICTS[resolvedCode] : ''
         const address = item.cot_addr_full_new || item.cot_addr_full_old || '-'
-        road.bindPopup(`<div class="charger-popup bike-popup"><span class="popup-region">서울특별시 ${escapeHtml(districtName)}</span><strong>${escapeHtml(item.cot_conts_name || '자전거도로')}</strong><p>${escapeHtml(address)}</p><dl><div><dt>도로 유형</dt><dd>${escapeHtml(item.sub_cate_name || '-')}</dd></div><div><dt>기점</dt><dd>${escapeHtml(item.cot_value_01 || '-')}</dd></div><div><dt>종점</dt><dd>${escapeHtml(item.cot_value_02 || '-')}</dd></div></dl></div>`, { maxWidth: 320 })
+        road.bindPopup(`<div class="charger-popup bike-popup"><span class="popup-region">서울특별시 ${escapeHtml(districtName)}</span><strong>${escapeHtml(item.cot_conts_name || '자전거도로')}</strong><p>${escapeHtml(address)}</p><dl><div><dt>도로 유형</dt><dd>자전거도로</dd></div><div><dt>기점</dt><dd>${escapeHtml(item.cot_value_01 || '-')}</dd></div><div><dt>종점</dt><dd>${escapeHtml(item.cot_value_02 || '-')}</dd></div></dl></div>`, { maxWidth: 320 })
       },
     }).addTo(map)
     roadLayerRef.current = layer
@@ -205,7 +190,6 @@ function BikeRoadMap() {
       <div className="charger-heading"><p>SEOUL BIKE NETWORK</p><h1>서울시 자전거도로<br/>분포</h1><span>서울 전역의 자전거도로 현황을 확인하세요.</span></div>
       <label className="region-select"><span><MapPin size={15}/> 자치구 선택</span><div><select value={district} onChange={(event) => setDistrict(event.target.value)}>{districtOptions.map((code) => <option value={code} key={code}>{code === '전체' ? '전체' : DISTRICTS[code]}</option>)}</select><ChevronDown size={16}/></div></label>
       <div className="charger-summary"><span>전체 도로 네트워크</span><strong>{networkEdgeCount.toLocaleString('ko-KR')}<small>개 링크</small></strong><p>일반도로 {(graph?.stats.generalEdges ?? 0).toLocaleString('ko-KR')} · 자전거도로 {(graph?.stats.bikeEdges ?? 0).toLocaleString('ko-KR')}</p></div>
-      <div className="bike-categories">{categoryCounts.map((item, index) => <div key={item.name}><i className={`bike-color-${index}`}/><span>{item.name}</span><strong>{item.count}</strong></div>)}</div>
       <div className="charger-legend"><span><i className="general-road-line"/> 일반도로</span><span><i className="bike-road-line"/> 자전거도로</span></div>
     </aside>
     <div className="map-panel">
